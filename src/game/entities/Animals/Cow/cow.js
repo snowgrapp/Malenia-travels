@@ -1,20 +1,27 @@
 // cow.js
 import { Animal } from '../animals.js';
+import { createCowAnims } from '../../../Animations/CowAnimation.js'; // Assure-toi que le chemin est bon
 
 export class Cow extends Animal {
     constructor(scene, x, y) {
         super(scene, x, y, "cow");
 
-        this.body.setImmovable(true);
-        this.body.setSize(10, 10);
-
-        scene.time.delayedCall(100, () => {
-            if (this.anims) {
-                this.play("idle-cow");
+        // Retarde la config physique pour éviter l'erreur
+        scene.time.delayedCall(0, () => {
+            if (this.sprite.body) {
+                this.sprite.body.setImmovable(true);
+                this.sprite.body.setSize(8, 8);
+            } else {
+                console.error("Le corps physique n'existe pas encore sur la sprite !");
             }
         });
 
-        this.specialBehavior();
+        // Lance l'animation idle un peu plus tard
+        scene.time.delayedCall(100, () => {
+            if (this.sprite.anims) {
+                this.sprite.play("cow-idle");
+            }
+        });
     }
 
     static preload(scene) {
@@ -25,36 +32,6 @@ export class Cow extends Animal {
     }
 
     static createAnims(scene) {
-        scene.anims.create({
-            key: "idle-cow",
-            frames: scene.anims.generateFrameNumbers("cow", { start: 0, end: 1 }),
-            frameRate: 3,
-            repeat: -1,
-        });
-
-        scene.anims.create({
-            key: "walk-cow",
-            frames: scene.anims.generateFrameNumbers("cow", { start: 8, end: 13 }),
-            frameRate: 8,
-            repeat: -1,
-        });
-
-        scene.anims.create({
-            key: "eat-cow",
-            frames: scene.anims.generateFrameNumbers("cow", { start: 16, end: 23 }),
-            frameRate: 8,
-            repeat: -1,
-        });
-
-        scene.anims.create({
-            key: "sleep-cow",
-            frames: scene.anims.generateFrameNumbers("cow", { start: 48, end: 55 }),
-            frameRate: 4,
-            repeat: -1,
-        });
-    }
-
-    specialBehavior() {
-        // Exemple de comportement spécifique
+        createCowAnims(scene);
     }
 }

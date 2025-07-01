@@ -1,54 +1,46 @@
 export class Animal {
     constructor(scene, x, y, type) {
-        this.scene = scene; // Référence à la scène Phaser
-        this.type = type;   // Type de l’animal (utilisé pour les animations)
+        this.scene = scene;
+        this.type = type;
 
-        // États internes de l’animal
         this.isSleeping = false;
         this.isEating = false;
-        this.currentDirection = null; // Dernière direction de déplacement
+        this.currentDirection = null;
 
-        // Création du sprite physique dans la scène
         this.sprite = scene.physics.add.sprite(x, y, type);
-        this.sprite.setDepth(10); // Affiche le sprite devant d'autres éléments
-        this.sprite.body.setCollideWorldBounds(true); // Empêche de sortir de la map
-        this.sprite.body.setSize(15, 15); // Redimensionne la hitbox
-        this.sprite.body.setOffset(8, 10); // Décale la hitbox pour mieux coller au visuel
+        this.sprite.setDepth(10);
+        this.sprite.body.setCollideWorldBounds(true);
+        this.sprite.body.setSize(15, 15);
+        this.sprite.body.setOffset(8, 10);
 
-        // Comportements automatiques de l’animal
-        this.idle();              // Joue l’animation idle au démarrage
-        this.startBehaviorLoop(); // Lance le déplacement aléatoire
-        this.startSleepCheck();   // Active les vérifications de sommeil
-        this.startEatCheck();     // Active les vérifications pour manger
+        this.idle(); // Toujours idle par défaut
 
-        // Attache une gestion des collisions globales à cet animal
+        // Lancement d’un cycle de comportement aléatoire
+        this.startRandomBehaviorLoop();
+
+        // Collisions
         this.scene.physics.world.on('collide', this.handleCollision, this);
     }
 
-    // Joue l’animation idle de l’animal
     idle() {
         this.sprite.anims.play(`${this.type}-idle`, true);
     }
 
-    // Joue l’animation de marche et change l’orientation du sprite selon la direction
     move(dir) {
-        this.sprite.anims.play(`${this.type}-walk`, true);
         if (dir === "left") {
-            this.sprite.setFlipX(false); // Non inversé
+            this.sprite.setFlipX(false);
         } else if (dir === "right") {
-            this.sprite.setFlipX(true); // Inversé horizontalement
+            this.sprite.setFlipX(true);
         }
     }
 
-    // Fait se déplacer l’animal dans une direction donnée s’il ne dort/mange pas
     moveInDirection(dir) {
         if (!this.isSleeping && !this.isEating) {
-            const speed = 50; // Vitesse du déplacement
+            const speed = 50;
             this.currentDirection = dir;
 
-            this.sprite.body.setVelocity(0); // Réinitialise la vitesse
+            this.sprite.body.setVelocity(0);
 
-            // Définit la direction de la vitesse selon le choix
             switch (dir) {
                 case "up": this.sprite.body.setVelocityY(-speed); break;
                 case "down": this.sprite.body.setVelocityY(speed); break;
@@ -56,100 +48,82 @@ export class Animal {
                 case "right": this.sprite.body.setVelocityX(speed); break;
             }
 
-            this.move(dir); // Joue l’animation correspondante
+            this.move(dir); // ajuste le flipX
 
-            // Arrête le déplacement après un court délai
+            // Revenir à l’état idle après 400ms
             this.scene.time.delayedCall(400, () => {
-                if (!this.isSleeping && !this.isEating) {
-                    this.sprite.body.setVelocity(0);
-                    this.currentDirection = null;
-                }
+                this.sprite.body.setVelocity(0);
+                this.currentDirection = null;
+                if (!this.isSleeping && !this.isEating) this.idle();
             });
         }
     }
 
-    // Boucle comportementale : déplace l’animal aléatoirement toutes les 2 à 4 secondes
-    startBehaviorLoop() {
-        const directions = ["up", "down", "left", "right"];
+    // Comportement aléatoire toutes les 5–8 sec
+    startRandomBehaviorLoop() {
         this.scene.time.addEvent({
-            delay: Phaser.Math.Between(2000, 4000), // Temps aléatoire
+            delay: Phaser.Math.Between(5000, 8000),
+            loop: true,
             callback: () => {
-                if (!this.isSleeping && !this.isEating) {
-                    const randomDirection = Phaser.Utils.Array.GetRandom(directions);
-                    this.moveInDirection(randomDirection);
+                if (this.isSleeping || this.isEating) return;
+
+                const actions = ["idle", "sleep", "eat", "move"];
+                const choice = Phaser.Utils.Array.GetRandom(actions);
+
+                switch (choice) {
+                    case "idle":
+                        this.idle();
+                        break;
+                    case "sleep":
+                        this.sleep();
+                        break;
+                    case "eat":
+                        this.startEating();
+                        break;
+                    case "move":
+                        const directions = ["up", "down", "left", "right"];
+                        const dir = Phaser.Utils.Array.GetRandom(directions);
+                        this.moveInDirection(dir);
+                        break;
                 }
-            },
-            loop: true
+            }
         });
     }
 
-    // Vérifie toutes les 20 à 40 secondes si l’animal doit dormir
-    startSleepCheck() {
-        this.scene.time.addEvent({
-            delay: Phaser.Math.Between(20000, 40000),
-            callback: () => {
-                if (!this.isEating && Phaser.Math.Between(0, 100) < 30) {
-                    this.sleep();
-                }
-            },
-            loop: true
-        });
-    }
-
-    // Fait dormir l’animal pendant 30 secondes
     sleep() {
         this.isSleeping = true;
-        this.sprite.body.setVelocity(0); // Arrête le mouvement
-        this.sprite.anims.play(`${this.type}-sleep`, true); // Joue l’animation de sommeil
+        this.sprite.body.setVelocity(0);
+        this.sprite.anims.play(`${this.type}-sleep`, true);
 
-        // Réveil automatique après 30 secondes
         this.scene.time.delayedCall(30000, () => {
             this.wakeUp();
         });
     }
 
-    // Réveille l’animal (retour à l’état idle)
     wakeUp() {
         this.isSleeping = false;
         this.idle();
     }
 
-    // Vérifie toutes les 20 à 40 secondes si l’animal doit manger
-    startEatCheck() {
-        this.scene.time.addEvent({
-            delay: Phaser.Math.Between(20000, 40000),
-            callback: () => {
-                if (!this.isSleeping && Phaser.Math.Between(0, 100) < 40) {
-                    this.startEating();
-                }
-            },
-            loop: true
-        });
-    }
-
-    // Démarre l’animation de repas pendant 3 secondes
     startEating() {
         this.isEating = true;
-        this.sprite.body.setVelocity(0); // Arrête le mouvement
-        this.sprite.anims.play(`${this.type}-eat`, true); // Joue l’animation de repas
+        this.sprite.body.setVelocity(0);
+        this.sprite.anims.play(`${this.type}-eat`, true);
 
         this.scene.time.delayedCall(3000, () => {
             this.stopEating();
         });
     }
 
-    // Termine l’action de manger et repasse à l’état idle
     stopEating() {
         this.isEating = false;
         this.idle();
     }
 
-    // Gestion des collisions : si le sprite est impliqué, stoppe le mouvement et inverse la direction
     handleCollision(gameObject1, gameObject2) {
         if (gameObject1 === this.sprite || gameObject2 === this.sprite) {
-            this.sprite.body.setVelocity(0); // Arrêt immédiat
+            this.sprite.body.setVelocity(0);
 
-            // Inverse la direction actuelle en cas de collision
             switch (this.currentDirection) {
                 case "up": this.moveInDirection("down"); break;
                 case "down": this.moveInDirection("up"); break;

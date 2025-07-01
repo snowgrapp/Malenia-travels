@@ -3,16 +3,20 @@ export class Npc {
         this.scene = scene;
         this.type = type;
         this.currentDirection = null;
-
+        this.isPlayerNear = false;
         this.sprite = scene.physics.add.sprite(x, y, type);
-        this.sprite.setDepth(10);
+        this.sprite.setDepth(1100);
         this.sprite.body.setCollideWorldBounds(true);
-
-
         this.idle();
         this.startBehaviorLoop();
 
         this.scene.physics.world.on("collide", this.handleCollision, this);
+    }
+
+    talk() {
+        if (!this.scene.dialogueBox.isActive) {
+            this.scene.dialogueBox.start(this.dialogues, this.sprite);
+        }
     }
 
     idle() {
@@ -72,5 +76,21 @@ export class Npc {
             this.idle();
         }
     }
+
+    update() {
+        const player = this.scene.player;
+        if (!player) return;
+        
+        const distance = Phaser.Math.Distance.Between(
+            this.sprite.x,
+            this.sprite.y,
+            player.x,
+            player.y
+        );
+    
+        this.isPlayerNear = distance < 100;
+        
+    }
 }
+
 
