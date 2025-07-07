@@ -22,25 +22,36 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     static preload(scene) {
-        scene.load.spritesheet("player", "public/assets/Cute_fantasy/Player/Player_New/Player_Anim/Player_Idle_Run_Death_Anim.png", {
-            frameWidth: 32,
-            frameHeight: 32
-        });
+        scene.load.spritesheet(
+            "player",
+            "/assets/Cute_Fantasy/Player/Player_New/Player_Anim/Player_Idle_Run_Death_Anim.png",
+            {
+                frameWidth: 32,
+                frameHeight: 32,
+            }
+        );
 
-        scene.load.spritesheet("player_actions", "/assets/Cute_fantasy/Player/Player_New/Player_Anim/Player_Actions_Anim_Tool.png", {
-            frameWidth: 48,
-            frameHeight: 48
-        });
+        scene.load.spritesheet(
+            "player_actions",
+            "/assets/Cute_Fantasy/Player/Player_New/Player_Anim/Player_Actions_Anim_Tool.png",
+            {
+                frameWidth: 48,
+                frameHeight: 48,
+            }
+        );
 
-        scene.load.spritesheet("player_jump", "/assets/Cute_fantasy/Player/Player_New/Player_Anim/Player_Jump_Anim.png", {
+        scene.load.spritesheet("player_jump", "public/assets/Cute_fantasy/Player/Player_New/Player_Anim/Player_Jump_Anim.png", {
             frameWidth: 48,
             frameHeight: 48
         });
     }
 
     static createAnimations(scene) {
+        
+        console.log(scene.textures.get("player_actions").frameTotal);
+        
         scene.anims.create({
-            key: "idle-player",
+        key: "idle-player",
             frames: scene.anims.generateFrameNumbers("player", { start: 0, end: 5 }),
             frameRate: 6,
             repeat: -1
@@ -293,3 +304,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 }
+
+
+

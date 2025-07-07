@@ -5,8 +5,10 @@ export function setupUiCamera(scene){
 
     scene.uiCamera.ignore([
         scene.player,
-        ...scene.npcs.map((n)=>n.sprite),
-        ...scene.animals.map((a)=>a.sprite),
+        ...scene.npcs.map((n) => n.sprite),
+        ...scene.animals.map((a) => a.sprite),
         ...Object.values(scene.layers),
-    ])
+    ]);
 }
+
+

@@ -21,10 +21,6 @@ export class Game extends Scene {
 
     preload() {
 
-
-
-        
-
         this.load.spritesheet("tool_icons", "/assets/Cute_Fantasy/Icons/Outline/Tool_Icons_Outline.png", {
             frameWidth: 16,
             frameHeight: 16
@@ -107,26 +103,32 @@ export class Game extends Scene {
             Trees: this.map.addTilesetImage("Big_Fruit_Tree", "big_fruit_tree"),
         };
 
-        // Création des couches
-    this.layers = {}; // Ajoute ceci
+        Object.entries(tilesets).forEach(([key, tileset]) => {
+            if (!tileset) {
+                console.error(`Tileset manquant ou mal nommé : ${key}`);
+            }
+        });
 
-this.layers.Grass = this.map.createLayer("Grass", tilesets.Grass, 0, 0);
-this.layers.Road = this.map.createLayer("Road", tilesets.Road, 0, 0);
-this.layers.Fences = this.map.createLayer("Fences", tilesets.Fences, 0, 0);
-this.layers.Land = this.map.createLayer("Land", tilesets.Land, 0, 0);
-this.layers.River = this.map.createLayer("River", tilesets.River_board, 0, 0);
-this.layers.Farm = this.map.createLayer("Farm", tilesets.Farm, 0, 0);
-this.layers.UpFarm = this.map.createLayer("Up-Farm", tilesets.Farm, 0, 0).setDepth(1000);
-this.layers.House = this.map.createLayer("House", tilesets.House_main, 0, 0);
-this.layers.UpHouse = this.map.createLayer("Up_House", tilesets.House_main, 0, 0).setDepth(1000);
-this.layers.HousePnj = this.map.createLayer("House_pnj", tilesets.House_pnj, 0, 0);
-this.layers.UpHousePnj = this.map.createLayer("Up-House-pnj", tilesets.House_pnj, 0, 0).setDepth(1000);
-this.layers.Decorations = this.map.createLayer("Decorations", tilesets.Decorations, 0, 0);
-this.layers.Rocks = this.map.createLayer("Rocks", tilesets.Outdoor_Decor, 0, 0);
-this.layers.Bush = this.map.createLayer("Bush", tilesets.Outdoor_Decor, 0, 0);
-this.layers.Flowers = this.map.createLayer("Flowers", tilesets.Outdoor_Decor, 0, 0);
-this.layers.Trees = this.map.createLayer("Trees", tilesets.Trees, 0, 0);
-this.layers.UpTrees = this.map.createLayer("Up_Trees", tilesets.Trees, 0, 0).setDepth(1000);
+        // Création des couches
+        this.layers = {}; // Ajoute ceci
+
+        this.layers.Grass = this.map.createLayer("Grass", tilesets.Grass, 0, 0);
+        this.layers.Road = this.map.createLayer("Road", tilesets.Road, 0, 0);
+        this.layers.Fences = this.map.createLayer("Fences", tilesets.Fences, 0, 0);
+        this.layers.Land = this.map.createLayer("Land", tilesets.Land, 0, 0);
+        this.layers.River = this.map.createLayer("River", tilesets.River_board, 0, 0);
+        this.layers.Farm = this.map.createLayer("Farm", tilesets.Farm, 0, 0);
+        this.layers.UpFarm = this.map.createLayer("Up-Farm", tilesets.Farm, 0, 0).setDepth(1000);
+        this.layers.House = this.map.createLayer("House", tilesets.House_main, 0, 0);
+        this.layers.UpHouse = this.map.createLayer("Up_House", tilesets.House_main, 0, 0).setDepth(1000);
+        this.layers.HousePnj = this.map.createLayer("House_pnj", tilesets.House_pnj, 0, 0);
+        this.layers.UpHousePnj = this.map.createLayer("Up-House-pnj", tilesets.House_pnj, 0, 0).setDepth(1000);
+        this.layers.Decorations = this.map.createLayer("Decorations", tilesets.Decorations, 0, 0);
+        this.layers.Rocks = this.map.createLayer("Rocks", tilesets.Decorations, 0, 0);
+        this.layers.Bush = this.map.createLayer("Bush", tilesets.Decorations, 0, 0);
+        this.layers.Flowers = this.map.createLayer("Flowers", tilesets.Decorations, 0, 0);
+        this.layers.Trees = this.map.createLayer("Trees", tilesets.Trees, 0, 0);
+        this.layers.UpTrees = this.map.createLayer("Up_Trees", tilesets.Trees, 0, 0).setDepth(1000);
 
 
         // Animations
@@ -226,4 +228,5 @@ this.layers.UpTrees = this.map.createLayer("Up_Trees", tilesets.Trees, 0, 0).set
         this.animals.forEach((animal) => animal.update && animal.update());
     }
 }
+
 
