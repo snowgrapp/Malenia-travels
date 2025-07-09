@@ -13,18 +13,16 @@ export class ToolBox {
         this.toolIcons = [];
 
         this.tools = [
-            { frame: 3, anim: "use_axe" },
-            { frame: 2, anim: "use_pickaxe" },
-            { frame: 6, anim: "use_water" }
+            { frame: 3, name: "axe" },
+            { frame: 2, name: "pickaxe" },
+            { frame: 6, name: "water" }
         ];
 
         this.createIcons();
         this.updatePosition();
 
-        scene.scale.on('resize', this.updatePosition.bind(this));
+        scene.scale.on("resize", this.updatePosition.bind(this));
     }
-
-  
 
     createIcons() {
         this.tools.forEach((tool, index) => {
@@ -33,14 +31,19 @@ export class ToolBox {
                 .setScale(1.8)
                 .setInteractive({ useHandCursor: true });
 
-            icon.on('pointerdown', () => {
-                if (!this.player.anims.isPlaying) {
-                    this.player.anims.play(tool.anim, true);
-                }
+            icon.on("pointerdown", () => {
+                this.player.selectTool(tool.name);
+                this.highlightSelected(index);
             });
 
             this.container.add(icon);
             this.toolIcons.push(icon);
+        });
+    }
+
+    highlightSelected(selectedIndex) {
+        this.toolIcons.forEach((icon, index) => {
+            icon.setAlpha(index === selectedIndex ? 1 : 0.5);
         });
     }
 
@@ -69,4 +72,3 @@ export class ToolBox {
         });
     }
 }
-

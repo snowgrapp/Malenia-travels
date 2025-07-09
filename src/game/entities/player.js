@@ -11,14 +11,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.setScale(0.8);
 
         this.cursors = scene.input.keyboard.createCursorKeys();
-        this.keys = scene.input.keyboard.addKeys({
-            axe: Phaser.Input.Keyboard.KeyCodes.A,
-            pickaxe: Phaser.Input.Keyboard.KeyCodes.Z,
-            water: Phaser.Input.Keyboard.KeyCodes.R
-        });
+        this.actionKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
 
-        this.lastDirection = "down"; // Par défaut, le joueur regarde vers le bas
-        this.lastFlipX = false; // Pour savoir si le joueur regardait à gauche
+        this.lastDirection = "down";
+        this.lastFlipX = false;
+
+        this.selectedTool = null;
     }
 
     static preload(scene) {
@@ -47,11 +45,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     static createAnimations(scene) {
-        
-        console.log(scene.textures.get("player_actions").frameTotal);
-        
+        // Animations identiques à celles du code d’origine
         scene.anims.create({
-        key: "idle-player",
+            key: "idle-player",
             frames: scene.anims.generateFrameNumbers("player", { start: 0, end: 5 }),
             frameRate: 6,
             repeat: -1
@@ -97,6 +93,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             repeat: -1
         });
 
+        // Animations outils
         scene.anims.create({
             key: "use_axe_right",
             frames: scene.anims.generateFrameNumbers("player_actions", { start: 18, end: 23 }),
@@ -161,13 +158,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
+    selectTool(toolName) {
+        this.selectedTool = toolName;
+    }
+
+    useSelectedTool() {
+        if (!this.selectedTool) return;
+
+        const animMap = {
+            axe: { down: "use_axe", up: "use_axe_up", side: "use_axe_right" },
+            pickaxe: { down: "use_pickaxe", up: "use_pickaxe_up", side: "use_pickaxe_right" },
+            water: { down: "use_water", up: "use_water_up", side: "use_water_right" }
+        };
+
+        const toolAnim = animMap[this.selectedTool];
+        if (!toolAnim) return;
+
+        switch (this.lastDirection) {
+            case "up":
+                this.anims.play(toolAnim.up, true);
+                break;
+            case "left":
+                this.anims.play(toolAnim.side, true);
+                this.setFlipX(true);
+                break;
+            case "right":
+                this.anims.play(toolAnim.side, true);
+                this.setFlipX(false);
+                break;
+            case "down":
+            default:
+                this.anims.play(toolAnim.down, true);
+                break;
+        }
+
+        this.setVelocity(0, 0);
+    }
+
     update() {
         const speed = 200;
         let velocityX = 0;
         let velocityY = 0;
         let moving = false;
 
-        // Empêche le déplacement pendant une animation d'action
+        // On bloque le déplacement si animation d'outil en cours
         const currentAnim = this.anims.currentAnim?.key;
         const isUsingTool = [
             "use_axe", "use_axe_up", "use_axe_right",
@@ -180,76 +214,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        // --- Utilisation de la hache ---
-        if (Phaser.Input.Keyboard.JustDown(this.keys.axe)) {
-            switch (this.lastDirection) {
-                case "up":
-                    this.anims.play("use_axe_up", true);
-                    break;
-                case "left":
-                    this.anims.play("use_axe_right", true);
-                    this.setFlipX(true);
-                    break;
-                case "right":
-                    this.anims.play("use_axe_right", true);
-                    this.setFlipX(false);
-                    break;
-                case "down":
-                default:
-                    this.anims.play("use_axe", true);
-                    break;
-            }
-            this.setVelocity(0, 0);
+        // Touche Z pour utiliser l'outil sélectionné
+        if (Phaser.Input.Keyboard.JustDown(this.actionKey)) {
+            this.useSelectedTool();
             return;
         }
 
-        // --- Utilisation de la pioche ---
-        if (Phaser.Input.Keyboard.JustDown(this.keys.pickaxe)) {
-            switch (this.lastDirection) {
-                case "up":
-                    this.anims.play("use_pickaxe_up", true);
-                    break;
-                case "left":
-                    this.anims.play("use_pickaxe_right", true);
-                    this.setFlipX(true);
-                    break;
-                case "right":
-                    this.anims.play("use_pickaxe_right", true);
-                    this.setFlipX(false);
-                    break;
-                case "down":
-                default:
-                    this.anims.play("use_pickaxe", true);
-                    break;
-            }
-            this.setVelocity(0, 0);
-            return;
-        }
-
-        // --- Utilisation de l'arrosoir ---
-        if (Phaser.Input.Keyboard.JustDown(this.keys.water)) {
-            switch (this.lastDirection) {
-                case "up":
-                    this.anims.play("use_water_up", true);
-                    break;
-                case "left":
-                    this.anims.play("use_water_right", true);
-                    this.setFlipX(true);
-                    break;
-                case "right":
-                    this.anims.play("use_water_right", true);
-                    this.setFlipX(false);
-                    break;
-                case "down":
-                default:
-                    this.anims.play("use_water", true);
-                    break;
-            }
-            this.setVelocity(0, 0);
-            return;
-        }
-
-        // --- Gestion des mouvements et mémorisation de la direction ---
+        // Gestion des déplacements
         if (this.cursors.left.isDown) {
             velocityX = -speed;
             this.anims.play("walk_right", true);
@@ -280,30 +251,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.setVelocity(velocityX, velocityY);
 
-        // --- Idle dans la dernière direction ---
+        // Animations idle selon dernière direction
         if (!moving) {
             switch (this.lastDirection) {
                 case "up":
                     this.anims.play("idle-up", true);
                     break;
                 case "down":
-                    this.anims.play("idle-player", true); // idle vers le bas
+                    this.anims.play("idle-player", true);
                     break;
                 case "left":
                     this.anims.play("idle-left", true);
                     this.setFlipX(true);
                     break;
                 case "right":
-                    this.anims.play("idle-left", true); // même anim que "left" mais sans flip
+                    this.anims.play("idle-left", true);
                     this.setFlipX(false);
-                    break;
-                default:
-                    this.anims.play("idle-player", true);
                     break;
             }
         }
     }
 }
-
-
-
