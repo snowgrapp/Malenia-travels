@@ -12,7 +12,7 @@ export class DialogueBox {
                 fill: "#ffffff",
                 wordWrap: { width: 180 },
             })
-            .setDepth(1001)
+            .setDepth(3000)
             .setVisible(false);
 
         scene.input.on("pointerdown", () => {

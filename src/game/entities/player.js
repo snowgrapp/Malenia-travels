@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { EventBus } from "../EventBus";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
@@ -42,10 +43,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             frameWidth: 48,
             frameHeight: 48
         });
+
+        scene.load.spritesheet("farmland_tiles", "public/assets/Cute_Fantasy/Tiles/FarmLand/FarmLand_Tile.png", {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+        
     }
 
     static createAnimations(scene) {
-        // Animations identiques à celles du code d’origine
         scene.anims.create({
             key: "idle-player",
             frames: scene.anims.generateFrameNumbers("player", { start: 0, end: 5 }),
@@ -164,16 +170,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     useSelectedTool() {
         if (!this.selectedTool) return;
-
+    
         const animMap = {
             axe: { down: "use_axe", up: "use_axe_up", side: "use_axe_right" },
             pickaxe: { down: "use_pickaxe", up: "use_pickaxe_up", side: "use_pickaxe_right" },
-            water: { down: "use_water", up: "use_water_up", side: "use_water_right" }
+            water: { down: "use_water", up: "use_water_up", side: "use_water_right" },
+            carrotSeed: { down: "use_water", up: "use_water_up", side: "use_water_right" } // On réutilise l'animation d'arrosage
+            
         };
-
+    
         const toolAnim = animMap[this.selectedTool];
         if (!toolAnim) return;
-
+    
         switch (this.lastDirection) {
             case "up":
                 this.anims.play(toolAnim.up, true);
@@ -191,8 +199,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.anims.play(toolAnim.down, true);
                 break;
         }
-
+    
         this.setVelocity(0, 0);
+    
+        // Émettre l'événement correspondant à l'outil
+        if (this.selectedTool === "pickaxe") {
+            EventBus.emit("use-pickaxe", this);
+        } else if (this.selectedTool === "carrotSeed") {
+            EventBus.emit("plant-seed", this); // Événement pour planter
+        }
     }
 
     update() {
@@ -201,7 +216,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         let velocityY = 0;
         let moving = false;
 
-        // On bloque le déplacement si animation d'outil en cours
         const currentAnim = this.anims.currentAnim?.key;
         const isUsingTool = [
             "use_axe", "use_axe_up", "use_axe_right",
@@ -214,13 +228,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        // Touche Z pour utiliser l'outil sélectionné
         if (Phaser.Input.Keyboard.JustDown(this.actionKey)) {
             this.useSelectedTool();
             return;
         }
 
-        // Gestion des déplacements
         if (this.cursors.left.isDown) {
             velocityX = -speed;
             this.anims.play("walk_right", true);
@@ -251,7 +263,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.setVelocity(velocityX, velocityY);
 
-        // Animations idle selon dernière direction
         if (!moving) {
             switch (this.lastDirection) {
                 case "up":
