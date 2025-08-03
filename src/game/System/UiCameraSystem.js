@@ -7,12 +7,13 @@ export function setupUiCamera(scene) {
     // Liste des éléments à ignorer par défaut
     const defaultIgnoreList = [
         scene.player,
-        ...(scene.npcs?.map(n => n?.sprite) || []),
-        ...(scene.animals?.map(a => a?.sprite) || []),
+        ...(scene.npcs?.map((n) => n?.sprite) || []),
+        ...(scene.animals?.map((a) => a?.sprite) || []),
         ...Object.values(scene.layers || {}).filter(Boolean),
         ...(scene.foregroundObjects || []),
         ...(scene.cuttableTrees || []),
-        ...(scene.droppedResources?.map(r => r.sprite) || [])
+        ...(scene.droppedResources?.map((r) => r?.sprite) || []),
+        ...(scene.crops?.map((c) => c?.sprite) || [])
     ].filter(Boolean); // Filtre les éléments null/undefined
 
     // Configure l'ignore
@@ -29,4 +30,6 @@ export function setupUiCamera(scene) {
     scene.removeFromUiCameraIgnore = (gameObject) => {
         scene.uiCamera.ignore = scene.uiCamera.ignore.filter(obj => obj !== gameObject);
     };
+
+
 }

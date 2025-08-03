@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
 import StartGame from './main';
 import { EventBus } from './EventBus';
+import { Game } from "./scenes/Game";
 
 export const PhaserGame = forwardRef(function PhaserGame ({ currentActiveScene }, ref)
 {
@@ -32,30 +33,22 @@ export const PhaserGame = forwardRef(function PhaserGame ({ currentActiveScene }
     }, [ref]);
 
     useEffect(() => {
-
         EventBus.on('current-scene-ready', (currentScene) => {
-
-            if (currentActiveScene instanceof Function)
-            {
-                currentActiveScene(currentScene);
+            if (ref && ref.current) {
+                ref.current.scene = currentScene;
+    
+                if (currentActiveScene instanceof Function) {
+                    currentActiveScene(currentScene);
+                }
+            } else {
+                console.error("Ref is null or undefined when setting the current scene");
             }
-            ref.current.scene = currentScene;
-            
         });
-
+    
         return () => {
-
             EventBus.removeListener('current-scene-ready');
-
-        }
-        
-    }, [currentActiveScene, ref])
-
-    return (
-        <div id="game-container"></div>
-    );
-
-});
+        };
+    }, [currentActiveScene, ref]);});
 
 // Props definitions
 PhaserGame.propTypes = {

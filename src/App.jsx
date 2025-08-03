@@ -1,15 +1,19 @@
-import { useRef } from "react";
-import { PhaserGame } from "./game/PhaserGame";
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { PhaserGame } from "./game/PhaserGame"; // Importez votre jeu Phaser
 
 function App() {
-    const phaserRef = useRef();
-
     return (
-        <div id="app">
-            <PhaserGame ref={phaserRef} />
-        </div>
+        <Router>
+            <Routes>
+              
+              
+
+                {/* Route pour le jeu */}
+                <Route path="/" element={<PhaserGame />} />
+            </Routes>
+        </Router>
     );
 }
 
 export default App;
-

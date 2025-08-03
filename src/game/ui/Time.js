@@ -20,7 +20,7 @@ export class Time {
       strokeThickness: 3,
       align: "right"
     });
-    this.timeText.setOrigin(1, 0); // align à droite, top
+    this.timeText.setOrigin(1.1, -0.2); // align à droite, top
     this.container.add(this.timeText);
 
     this.updatePosition();
@@ -69,7 +69,7 @@ export class Time {
     const h = this.scene.scale.height;
 
     // Position top-right avec 10px margin
-    this.container.x = w - 10;
+    this.container.x = w - 30;
     this.container.y = 10;
   }
 

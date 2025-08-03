@@ -9,7 +9,9 @@ import { ToolBox } from "../ui/ToolBox.js";
 import { EventBus } from "../EventBus";
 import { setupCollisions } from "../Config/CollisionConfig.js";
 import { setupUiCamera } from "../System/UiCameraSystem.js";
+import { setupPlayerCamera } from "../System/setupPlayerCamera.js";
 import { Inventory } from "../System/UiInventory.js";
+import { Time } from "../ui/Time.js";
 
 export class Game extends Scene {
     constructor() {
@@ -64,6 +66,7 @@ export class Game extends Scene {
 
     create() {
         this.map = this.make.tilemap({ key: "map" });
+
 
         const tilesets = {
             Grass: this.map.addTilesetImage("Grass", "grass_4_middle"),
@@ -176,14 +179,17 @@ export class Game extends Scene {
 
         setupCollisions(this, this.player, [...this.animals, ...this.npcs]);
 
-        this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-        this.cameras.main.setZoom(2.5);
-        this.cameras.main.startFollow(this.player);
-        setupUiCamera(this);
-
         this.dialogueBox = new DialogueBox(this);
         this.toolBox = new ToolBox(this, this.player);
         this.inventory = new Inventory(this);
+        setupPlayerCamera(this);
+        
+        setupUiCamera(this);
+
+        this.timeSystem = new Time(this);
+        
+
+        
 
         this.interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
         this.actionKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
@@ -314,7 +320,7 @@ export class Game extends Scene {
                 return true; // Garder si pas récolté
             });
         
-            // ... reste du code existant ...
+        
         
     
         // Gestion de la récolte
@@ -385,6 +391,14 @@ export class Game extends Scene {
 
     
 }
+
+
+
+
+
+
+
+
 
 
 
